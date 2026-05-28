@@ -1,246 +1,233 @@
 # Intent-to-Auditable-Trust-Object (IATO)
 
->This repository contains a formal semantic framework for reasoning about observational equivalence and refinement over parameterised SVE execution state under abstract virtualisation-mediated transitions.
-The system models vector-length indexed execution state as a first-class semantic object and defines a labelled transition structure over architectural projections. The framework deliberately excludes hardware, hypervisor, scheduling, MMU, and implementation-specific execution mechanisms, treating execution infrastructure as an abstract correctness-preserving environment.
-The repository is oriented toward:
+**Structural abstraction theory of observation-induced equivalence over heterogeneous state spaces.**
 
-- refinement semantics,
-- bisimulation structure,
-- vector-length indexed state reasoning,
-- migration invariance,
-- observational equivalence,
-- and formally structured transition systems.
+Grounded in structural operational semantics (SOS), labelled transition systems (LTS), and coalgebraic behavioural structure — reinterpreted through an observation-first perspective.
 
----
-
-### Semantic Configuration Model
-A configuration is defined as:
-
-```text
-C = (v, σ)
-
-where:
-
-v  ∈ V(λ)
-σ  ∈ Σ
-λ ∈ {128, 256, 512}
-```
-* v denotes vector-length indexed state
-* σ denotes an abstract architectural projection
-* Each vector length induces a distinct state space
+Derived as an emblematic representation of OS internals. The framework models behaviour invariant across cache, database, and timing side-channel characteristics. Spectre and Meltdown disclosure primitives emerge as direct by-products: they are admissible transformations.
 
 
-**The framework does not model:**
+## Motivation
 
-* EL2 implementation,
-* Stage-2 MMU behaviour,
-* VMID allocation,
-* scheduling,
-* microarchitectural state,
-* or hardware execution internals.
+Classical behavioural equivalence assumes a fixed, uniform state space and derives equivalence from transition structure. This is inadequate for OS-level execution environments where:
 
-These are treated as abstract execution infrastructure external to the semantic system.
+- Execution carriers are architecture-indexed, vector-length-indexed, or VM-level structured spaces
+- No canonical state space exists
+- Timing, cache, and microarchitectural state are not first-class in the semantic model but leak through observation
 
+This framework inverts the dependency. **Observation is primary.** Equivalence is induced, not assumed. Transformations are constrained by preservation of the observational quotient — not by semantic proximity or metric approximation.
 
-
-**Observational Semantics:**
-
-Observation is defined through an observation function:
-```text
-O: C → O
-```
-**Observational equivalence is defined as:**
-
-```text
-C₁ ≈ C₂  ⇔  O(C₁) = O(C₂)
-```
-
-- Equivalence is defined only over observable architectural behaviour.
-- The semantic system isolates vector-length indexed structure as the sole divergence dimension under transition and reconfiguration.
+The implication for side-channel analysis is that a transformation (context switch, speculative execution, cache eviction, VM migration) is **admissible** iff it preserves `O_μ(T(s)) = O_λ(s)`. Spectre/Meltdown violate this constraint by construction — they permit a distinguishing observation over states, abstraction treats as equivalent.
 
 
-
-**Transition System:**
-
-The framework defines a labelled transition system:
-```text
-C ─α→ C′
-
-where:
-α ∈ {exec, mig, reconf}
-```
-**Transition interpretation:**
-
-* `exec` : execution transition within a fixed vector-length space
-* `mig`  : abstract migration transformation
-* `reconf`: vector-length reconfiguration transition
-
-- Execution preserves vector length.
-- Reconfiguration permits transition across vector-length indexed state spaces.
-
-
-
-**Embedding Between Vector-Length Spaces:**
-
-An embedding is defined between vector-length indexed state spaces:
-
-```text
-ι_λ₁→λ₂ : V(λ₁) → V(λ₂)
-
-such that:
-
-λ₁ ≤ λ₂
-
-and:
-
-O(ι(v)) = O(v)
-```
-
-The embedding acts as a structure-preserving injection across vector-length configurations.
-
-
-
-**Refinement Relation:**
-
-Refinement is defined as a forward simulation relation:
-```
-C₁ ⊑ C₂
-
-iff for all transitions:
-
-C₂ ─α→ C′₂
-⇒
-∃C′₁ :
-C₁ ─α→ C′₁ ∧ C′₁ ≈ C′₂
-```
-The refinement relation establishes behavioural preservation under execution, migration, and reconfiguration transitions.
-
-
-
-**Bisimulation:**
-
-A relation R is a bisimulation if:
-```
-C₁ R C₂ ⇒ C₁ ≈ C₂
-```
-and transitions are matched in both directions.
-
-The framework uses bisimulation to reason about observational equivalence preservation across parameterised execution configurations.
-
-
-
-**Main Preservation Result:**
-
-Migration preservation is expressed as:
-```
-C_H ⊑ C_G
-⇒
-O(mig(C_H)) = O(mig(C_G))
-```
-The proof structure is established through:
-
-* embedding preservation,
-* refinement stability,
-* migration invariance,
-* trace preservation,
-* and transition commutativity.
-
-
-
-**Core Semantic Properties:**
-
-* `P₁`:  Each vector length induces a distinct indexed state space
-* `P₂`:  Observational equivalence depends only on architectural projection σ
-* `P₃`:  Embedding preserves observable behaviour
-* `P₄`:  Refinement is stable under transition execution
-* `P₅`:  Migration preserves observational semantics
-* `P₆`:  Refinement is preserved over execution traces
-* `P₇`:  Transition application commutes with vector-state embedding
-
+## Repo Structure
 
 ```
-.
-├── semantic_foundations.md
-│   ├── vector-length indexed state definitions
-│   ├── configuration well-formedness
-│   └── state-space construction
-├── observational_semantics.md
-│   ├── observation function
-│   ├── observational equivalence
-│   └── architectural projection semantics
-├── transition_system.md
-│   ├── labelled transition structure
-│   ├── execution semantics
-│   ├── migration semantics
-│   └── reconfiguration semantics
-├── embedding_relations.md
-│   ├── vector-length embeddings
-│   ├── structure-preserving injections
-│   └── observational preservation
-├── refinement.md
-│   ├── forward simulation relations
-│   ├── refinement stability
-│   └── trace preservation
-├── bisimulation.md
-│   ├── bisimulation structure
-│   ├── coinductive equivalence relations
-│   └── behavioural correspondence
-├── migration_preservation.md
-│   ├── migration invariance theorem
-│   ├── preservation lemmas
-│   └── commutativity properties
-└── lean/
-    ├── formal theorem structure
-    ├── semantic encodings
-    ├── proof scaffolding
-    └── relational constructions
+obs-equiv/
+├── README.md
+├── theory/
+│   ├── primitives.md          # Core structural primitives
+│   ├── equivalence.md         # Observation-induced quotient semantics
+│   ├── transformations.md     # Admissibility constraints on T_λμ
+│   └── refinement.md          # Observational discrimination ordering
+├── os-model/
+│   ├── carrier-index.md       # Heterogeneous execution carrier taxonomy
+│   ├── cache-channel.md       # Cache side-channel as inadmissible transform
+│   ├── timing-channel.md      # Timing channel as observational distinguisher
+│   └── spectre-meltdown.md    # Spectre/Meltdown as quotient-violation primitives
+└── formal/
+    ├── obs-map.v              # Coq/Lean sketch — observation map family
+    ├── quotient.v             # Quotient construction
+    └── admissibility.v        # Admissibility predicate for transformations
 ```
 
----
-
-### Scope: 
-
-This repository defines a semantic and relational formalisation framework for reasoning about computation at an abstract level.
-
-It focuses on the mathematical structure of systems rather than their execution in concrete runtime environments.
-
-### Non-Goals:
-
-This framework is *not*:
-
-- a hardware implementation
-- a hypervisor implementation
-- a kernel engineering project
-- a QEMU/KVM deployment or configuration repository
-- a microarchitectural execution model
-- a systems-level emulator or simulator
 
 
-The system models *abstract execution semantics* over parameterised state representations, with emphasis on:
+## Core Framework
 
-- semantic preservation properties
-- relational reasoning over state transformations
-- equivalence notions under structural variation
-- compositional behaviour of transitions
+### Key Primitives
 
-The formal objects in this repository are interpreted as:
+| Primitive | Definition |
+|---|---|
+| Execution carrier | `S_λ` — architecture/context-indexed state space |
+| Observation map | `O_λ : S_λ → Obs` |
+| Induced equivalence | `s ~ t ⟺ O(s) = O(t)` |
+| Quotient | `Q = S / ~` |
+| Admissible transform | `T_λμ : S_λ → S_μ` such that `O_μ(T(s)) = O_λ(s)` |
 
-- parameterised execution states (including vector-length indexed configurations)
-- abstract transition systems capturing execution, migration, and reconfiguration
-- relational mappings between semantic domains
-- observational projections of system behaviour
+No metric. No optimisation. No implementation grounding.
 
-### Core Objective:
 
-The central pillar is to reason about:
+### (A) Observational Structure is Primary
 
-*Preservation of semantic structure under transformation of execution state in a virtualisation-structured operational model.*
+A family of observation maps over non-isomorphic carriers:
 
-This includes studying:
+```
+O_λ : S_λ → Obs
+```
 
-- when two systems are observationally equivalent
-- when transformations preserve behavioural semantics
-- how refinement and bisimulation relations are maintained under migration-like dynamics
+Domains `S_λ` need not be identical. `Obs` is a shared observational codomain — the only structure that is uniform across execution contexts.
+
+In OS terms: `Obs` captures what is architecturally visible to an unprivileged observer — register file snapshots, memory-mapped I/O reads, syscall return values. It does **not** include microarchitectural state (cache occupancy, TLB residency, branch predictor state) — until those become observable through a side channel.
+
+
+
+### (B) Equivalence is Induced, Not Assumed
+
+No fixed bisimulation relation is assumed a priori.
+
+```
+s ~ t  ⟺  O(s) = O(t)
+```
+
+Equivalence is defined **after** structural heterogeneity is introduced — not before. The quotient `Q = S / ~` is the primary semantic object.
+
+```
+-- Haskell-style sketch
+type Obs = ...                          -- observational domain
+type S λ = ...                          -- carrier indexed by λ
+
+obs :: S λ -> Obs
+
+equiv :: S λ -> S λ -> Bool
+equiv s t = obs s == obs t
+```
+
+
+
+### (C) Transformations as the Real Object of Study
+
+```
+T_λμ : S_λ → S_μ
+```
+
+Admissibility constraint:
+
+```
+O_μ(T_λμ(s)) = O_λ(s)   ∀s ∈ S_λ
+```
+
+This is not a bisimulation condition on transition structure. It is a **preservation condition on the observational quotient**. A transformation that alters which states are observationally distinguishable is inadmissible.
+
+```python
+def admissible(T, obs_lambda, obs_mu, S_lambda):
+    """
+    T          : S_lambda -> S_mu
+    obs_lambda : S_lambda -> Obs
+    obs_mu     : S_mu     -> Obs
+    """
+    return all(
+        obs_mu(T(s)) == obs_lambda(s)
+        for s in S_lambda
+    )
+```
+
+
+
+### (D) Refinement as Observational Discrimination Ordering
+
+Not a fixed-point construction.
+
+```
+S_λ ≤ S_μ  ⟺  (s ~_μ t  ⟹  s ~_λ t)
+```
+
+A finer carrier distinguishes more states. A coarser carrier collapses more states into equivalence classes. Refinement is the preorder on carriers induced by the relative distinguishing power of their observation maps.
+
+In OS terms: moving from architectural to microarchitectural observation is a refinement step — it separates states that were previously equivalent under the coarser map.
+
+
+
+## OS Internals Grounding
+
+This framework is derived as an emblematic representation of OS internals. The execution carriers directly correspond to observable levels in a real system:
+
+```
+Execution carrier S_λ         OS-level instantiation
+─────────────────────────────────────────────────────
+S_arch                         architectural ISA state
+S_uarch                        microarchitectural state (cache, TLB, BPU)
+S_vm                           hypervisor-level virtualised state
+S_db                           persistent store / transactional state
+S_rt                           real-time / scheduler-visible timing state
+```
+
+Observation maps at each level define what is **architecturally visible** vs what leaks through covert channels.
+
+
+## Side-Channel Analysis: Spectre and Meltdown as Quotient Violations
+
+Spectre-class and Meltdown-class vulnerabilities are a direct by-product of this model. They are inadmissible transformations — transformations that violate the observational quotient preservation constraint.
+
+### Formal characterisation
+
+Let:
+- `S_arch` = architectural state space (ISA-visible)
+- `S_uarch` = microarchitectural state space (cache, BPU, TLB)
+- `O_arch : S_arch → Obs` = architectural observation map
+- `O_uarch : S_uarch → Obs_μ` = microarchitectural observation map
+
+Under normal operation, speculative execution is intended to be a transparent implementation detail:
+
+```
+O_arch(T_spec(s)) = O_arch(s)   -- intended invariant
+```
+
+Spectre/Meltdown break this. The speculative transform `T_spec` causes a microarchitectural side-effect (cache line load) that is observable via a timing channel:
+
+```
+O_uarch(T_spec(s)) ≠ O_uarch(s)
+```
+
+And because `O_uarch` can be probed from an unprivileged context (FLUSH+RELOAD, PRIME+PROBE), it becomes a distinguisher over states that `O_arch` treats as equivalent:
+
+```
+∃ s, t :  O_arch(s) = O_arch(t)   -- architecturally equivalent
+          O_uarch(T_spec(s)) ≠ O_uarch(T_spec(t))   -- μarch-distinguishable
+```
+
+This is exactly a quotient violation. `T_spec` is inadmissible under the observational quotient of `S_arch`.
+
+### Cache and timing channels — general form
+
+```
+                    ┌──────────────┐
+                    │   S_arch     │   architectural carrier
+                    │  O_arch(s)   │──────────────────────► Obs_arch
+                    └──────┬───────┘
+                           │ T_spec (speculative exec / context switch / syscall)
+                           ▼
+                    ┌──────────────┐
+                    │   S_uarch    │   microarchitectural carrier
+                    │  O_uarch(s)  │──────────────────────► Obs_uarch
+                    └──────────────┘
+                           │
+                    timing probe / cache probe (FLUSH+RELOAD)
+                           │
+                           ▼
+                    distinguishable  ──► quotient violated ──► inadmissible
+```
+
+The invariant that the framework enforces — stability of the observational quotient under admissible transformations — is precisely the property that hardware and OS mitigations (KPTI, Retpoline, microcode serialisation, speculation barriers) attempt to restore.
+
+
+## Correctness Characterisation
+
+> Correctness = stability of the observational quotient under admissible transformations.
+
+A system is behaviourally correct iff for every admissible transformation `T_λμ` and every pair of states `s, t`:
+
+```
+s ~ t  ⟹  T_λμ(s) ~ T_λμ(t)
+```
+
+Equivalently: admissible transformations induce well-defined maps on the quotient `Q = S / ~`.
+
+This characterisation is:
+- independent of metrics
+- independent of optimisation criteria
+- independent of implementation-specific assumptions
+- directly applicable to cache, DB transaction, and timing side-channel analysis
 
 ---
 
@@ -261,3 +248,11 @@ Winskel, Glynn. The Formal Semantics of Programming Languages: An Introduction. 
 Plotkin, Gordon D. “A Structural Approach to Operational Semantics.” Aarhus University, 1981.
 
 Aspinall, David, and Lars Birkedal. “Type-Theoretic Foundations of Programming Languages.” In Handbook of Logic in Computer Science, vol. 5, Oxford University Press, 2000.
+
+Rutten, J. (2000). Universal coalgebra: a theory of systems. *TCS 249(1).*
+
+Kocher et al. (2019). Spectre attacks: exploiting speculative execution. *IEEE S&P.*
+
+Lipp et al. (2018). Meltdown: reading kernel memory from user space. *USENIX Security.*
+
+Ge et al. (2018). A survey of microarchitectural timing attacks. *J. Cryptographic Engineering.*
