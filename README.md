@@ -83,7 +83,7 @@ s ~ t  ⟺  O(s) = O(t)
 Equivalence is defined **after** structural heterogeneity is introduced — not before. The quotient `Q = S / ~` is the primary semantic object.
 
 ```
--- Haskell-style sketch
+-- Haskell sketch
 type Obs = ...                          -- observational domain
 type S λ = ...                          -- carrier indexed by λ
 
